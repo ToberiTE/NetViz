@@ -10,7 +10,7 @@ import { mkConfig, generateCsv, download } from "export-to-csv";
 import { Device } from "../../reducers/dashboardSlice";
 import { useSelector } from "react-redux";
 import { selectDashboardFields } from "../../reducers/selectors";
-import { StatusCircle } from "../Assets";
+import { StatusCircle } from "../CustomComponents";
 
 const csvConfig = mkConfig({
   fieldSeparator: ",",
@@ -66,66 +66,64 @@ const ProjectTable = () => {
 
   return (
     <ThemeProvider theme={theme}>
-      <Box height="100%" width="100%">
-        <MaterialReactTable
-          enableColumnResizing
-          enableColumnOrdering
-          enableFilterMatchHighlighting
-          columns={columns}
-          data={devices ?? []}
-          initialState={{ showColumnFilters: false }}
-          enableRowSelection
-          enableGrouping
-          renderTopToolbarCustomActions={({ table }) => (
-            <Box display="flex" flexDirection="column" gap={2}>
-              <Box display="flex" gap={1}>
-                <Button
-                  onClick={handleExportData}
-                  startIcon={<FileDownloadIcon />}
-                  variant="text"
-                  size="small"
-                >
-                  Export raw
-                </Button>
-                <Button
-                  disabled={table.getPrePaginationRowModel().rows.length === 0}
-                  onClick={() =>
-                    handleExportRows(table.getPrePaginationRowModel().rows)
-                  }
-                  startIcon={<FileDownloadIcon />}
-                  variant="text"
-                  size="small"
-                >
-                  Export filtered
-                </Button>
-                <Button
-                  disabled={table.getRowModel().rows.length === 0}
-                  onClick={() => handleExportRows(table.getRowModel().rows)}
-                  startIcon={<FileDownloadIcon />}
-                  variant="text"
-                  size="small"
-                >
-                  Export page
-                </Button>
-                <Button
-                  disabled={
-                    !table.getIsSomeRowsSelected() &&
-                    !table.getIsAllRowsSelected()
-                  }
-                  onClick={() =>
-                    handleExportRows(table.getSelectedRowModel().rows)
-                  }
-                  startIcon={<FileDownloadIcon />}
-                  variant="text"
-                  size="small"
-                >
-                  Export selection
-                </Button>
-              </Box>
+      <MaterialReactTable
+        enableColumnResizing
+        enableColumnOrdering
+        enableFilterMatchHighlighting
+        columns={columns}
+        data={devices ?? []}
+        initialState={{ showColumnFilters: false }}
+        enableRowSelection
+        enableGrouping
+        renderTopToolbarCustomActions={({ table }) => (
+          <Box display="flex" flexDirection="column" gap={2}>
+            <Box display="flex" gap={1}>
+              <Button
+                onClick={handleExportData}
+                startIcon={<FileDownloadIcon />}
+                variant="text"
+                size="small"
+              >
+                Export raw
+              </Button>
+              <Button
+                disabled={table.getPrePaginationRowModel().rows.length === 0}
+                onClick={() =>
+                  handleExportRows(table.getPrePaginationRowModel().rows)
+                }
+                startIcon={<FileDownloadIcon />}
+                variant="text"
+                size="small"
+              >
+                Export filtered
+              </Button>
+              <Button
+                disabled={table.getRowModel().rows.length === 0}
+                onClick={() => handleExportRows(table.getRowModel().rows)}
+                startIcon={<FileDownloadIcon />}
+                variant="text"
+                size="small"
+              >
+                Export page
+              </Button>
+              <Button
+                disabled={
+                  !table.getIsSomeRowsSelected() &&
+                  !table.getIsAllRowsSelected()
+                }
+                onClick={() =>
+                  handleExportRows(table.getSelectedRowModel().rows)
+                }
+                startIcon={<FileDownloadIcon />}
+                variant="text"
+                size="small"
+              >
+                Export selection
+              </Button>
             </Box>
-          )}
-        />
-      </Box>
+          </Box>
+        )}
+      />
     </ThemeProvider>
   );
 };

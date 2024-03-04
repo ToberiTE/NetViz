@@ -17,11 +17,8 @@ import { ColorModeContext } from "./color-context";
 import Sidenav from "./components/Sidenav";
 
 import store from "./store";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 function App(_Props: { toggleColorMode: void }) {
-  const queryClient = new QueryClient();
-
   const prefersDarkMode = useMediaQuery<string>("(prefers-color-scheme: dark)");
   const [mode, setMode] = useState<string>();
 
@@ -77,31 +74,29 @@ function App(_Props: { toggleColorMode: void }) {
   );
   return (
     <>
-      <QueryClientProvider client={queryClient}>
-        <BrowserRouter>
-          <Provider store={store}>
-            <Box
-              display="flex"
-              width="100%"
-              height="100%"
-              position="fixed"
-              top="4rem"
-              maxHeight="calc(100% - 4rem)"
-            >
-              <ColorModeContext.Provider value={colorMode}>
-                <ThemeProvider theme={theme}>
-                  <CssBaseline enableColorScheme />
-                  <Navbar />
-                  <Sidenav />
-                  <Routes>
-                    <Route path="/" element={<Dashboard />} />
-                  </Routes>
-                </ThemeProvider>
-              </ColorModeContext.Provider>
-            </Box>
-          </Provider>
-        </BrowserRouter>
-      </QueryClientProvider>
+      <BrowserRouter>
+        <Provider store={store}>
+          <Box
+            display="flex"
+            width="100%"
+            height="100%"
+            position="fixed"
+            top="4rem"
+            maxHeight="calc(100% - 4rem)"
+          >
+            <ColorModeContext.Provider value={colorMode}>
+              <ThemeProvider theme={theme}>
+                <CssBaseline enableColorScheme />
+                <Navbar />
+                <Sidenav />
+                <Routes>
+                  <Route path="/" element={<Dashboard />} />
+                </Routes>
+              </ThemeProvider>
+            </ColorModeContext.Provider>
+          </Box>
+        </Provider>
+      </BrowserRouter>
     </>
   );
 }

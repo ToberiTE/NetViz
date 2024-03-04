@@ -9,6 +9,7 @@ export const selectDashboardFields = createSelector(
         devices: dashboard.devices,
         selectedFlag: dashboard.selectedFlag,
         selectedTarget: dashboard.selectedTarget,
+        selectedTiming: dashboard.selectedTiming,
         scanStatus: dashboard.scanStatus,
     })
 );

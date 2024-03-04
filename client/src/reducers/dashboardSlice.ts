@@ -21,6 +21,7 @@ export interface DashboardState
     devices: Device[];
     selectedFlag: string;
     selectedTarget: string,
+    selectedTiming: string,
     scanStatus: string,
 }
 
@@ -28,6 +29,7 @@ const initialState: DashboardState = {
     devices: [],
     selectedFlag: "",
     selectedTarget: "",
+    selectedTiming: "",
     scanStatus: "",
 };
 
@@ -47,6 +49,10 @@ export const dashboardSlice = createSlice({
         {
             state.selectedTarget = action.payload;
         },
+        setSelectedTiming: (state, action: PayloadAction<string>) =>
+        {
+            state.selectedTiming = action.payload;
+        },
         setScanStatus: (state, action: PayloadAction<string>) =>
         {
             state.scanStatus = action.payload;
@@ -54,6 +60,6 @@ export const dashboardSlice = createSlice({
     },
 });
 
-export const { setDevices, setSelectedFlag, setSelectedTarget, setScanStatus } = dashboardSlice.actions;
+export const { setDevices, setSelectedFlag, setSelectedTarget, setSelectedTiming, setScanStatus } = dashboardSlice.actions;
 
 export default dashboardSlice.reducer;

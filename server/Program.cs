@@ -1,4 +1,3 @@
-using System;
 using System.Diagnostics;
 using Server;
 using Microsoft.AspNetCore.Http.Json;
@@ -32,16 +31,16 @@ app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
-app.MapGet("/scan", async (string? path, string? flag, string? target, CancellationToken cancellationToken) =>
+app.MapGet("/scan", async (string? path, string flag, string target, string timing, CancellationToken cancellationToken) =>
 {
     try
     {
-        var devices = await StartNmapScan(path, flag, target, cancellationToken);
+        var devices = await StartNmapScan(path, flag, target, timing, cancellationToken);
         return Results.Ok(devices);
     }
     catch (ScanException ex)
     {
-        return Results.BadRequest(new { Error = ex.Message, ErrorOutput = ex.ErrorOutput });
+        return Results.BadRequest(new { Error = ex.Message, ex.ErrorOutput });
     }
     catch (Exception ex)
     {
@@ -51,20 +50,18 @@ app.MapGet("/scan", async (string? path, string? flag, string? target, Cancellat
 
 app.Run();
 
-static async Task<List<DeviceModel>> StartNmapScan(string? path, string? flag, string? target, CancellationToken cancellationToken)
+static async Task<List<DeviceModel>> StartNmapScan(string? path, string flag, string target, string timing, CancellationToken cancellationToken)
 {
     string decodedTarget = Uri.UnescapeDataString(target);
     string nmapPath = path ?? @"C:\Program Files (x86)\Nmap\nmap.exe"; // syspath or executable.
     string outputFile = "nmap_output.xml";
-    string nmapArguments = !string.IsNullOrEmpty(flag) && !string.IsNullOrEmpty(decodedTarget)
-                           ? $"{flag} {decodedTarget} -T5 -oX {outputFile}"
-                           : "-sn 192.168.1.1/24 -oX " + outputFile; // Nmap command and arguments, supplied arg or default value.
+    string nmapArguments = $"{flag} {decodedTarget} {timing} -oX {outputFile}"; // Nmap command options.
 
-    List<DeviceModel> devices = new();
+    List<DeviceModel> devices = [];
 
     try
     {
-        using (Process process = new Process())
+        using (Process process = new())
         {
             process.StartInfo.FileName = nmapPath;
             process.StartInfo.Arguments = nmapArguments;
@@ -73,7 +70,7 @@ static async Task<List<DeviceModel>> StartNmapScan(string? path, string? flag, s
             process.StartInfo.RedirectStandardError = true;
             process.Start();
 
-            using (var registration = cancellationToken.Register(() => process.Kill()))
+            using (var registration = cancellationToken.Register(process.Kill))
             {
                 await process.WaitForExitAsync(cancellationToken);
             }
@@ -81,7 +78,7 @@ static async Task<List<DeviceModel>> StartNmapScan(string? path, string? flag, s
             if (process.ExitCode != 0)
             {
                 // Handle non-zero exit code.
-                string errorOutput = await process.StandardError.ReadToEndAsync();
+                string errorOutput = await process.StandardError.ReadToEndAsync(cancellationToken);
                 throw new ScanException("Scan failed.", errorOutput);
             }
         }
@@ -108,13 +105,13 @@ static async Task<List<DeviceModel>> StartNmapScan(string? path, string? flag, s
             var ports = host.Descendants("ports").Descendants("port")
                 .Select(port => new PortInfo
                 {
-                    PortNumber = (int)port.Attribute("portid"),
-                    Protocol = (string)port.Attribute("protocol"),
+                    PortNumber = (int?)port.Attribute("portid"),
+                    Protocol = (string?)port.Attribute("protocol"),
                     State = port.Element("state")?.Attribute("state")?.Value,
                     ServiceName = port.Element("service")?.Attribute("name")?.Value,
                 }).ToList();
 
-            DeviceModel device = new DeviceModel
+            DeviceModel device = new()
             {
                 Hostname = hostname,
                 IpAddress = ipAddress,
@@ -149,17 +146,12 @@ record DeviceModel
 }
 record PortInfo
 {
-    public int PortNumber { get; init; }
+    public int? PortNumber { get; init; }
     public string? Protocol { get; init; }
     public string? ServiceName { get; init; }
     public string? State { get; init; }
 }
-class ScanException : Exception
+class ScanException(string message, string errorOutput) : Exception(message)
 {
-    public string ErrorOutput { get; }
-
-    public ScanException(string message, string errorOutput) : base(message)
-    {
-        ErrorOutput = errorOutput;
-    }
+    public string ErrorOutput { get; } = errorOutput;
 }

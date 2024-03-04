@@ -1,6 +1,7 @@
 import {
   Box,
   Button,
+  Collapse,
   FormControl,
   InputLabel,
   MenuItem,
@@ -8,7 +9,6 @@ import {
   Select,
   TextField,
   Typography,
-  debounce,
   useTheme,
 } from "@mui/material";
 import {
@@ -17,40 +17,65 @@ import {
   setScanStatus,
   setSelectedFlag,
   setSelectedTarget,
+  setSelectedTiming,
 } from "../../reducers/dashboardSlice";
 import React, { useState } from "react";
 import { selectDashboardFields } from "../../reducers/selectors";
 import { AnyAction, Dispatch } from "@reduxjs/toolkit";
 import { useDispatch, useSelector } from "react-redux";
 import NetworkTable from "./NetworkTable";
-import { ExpandLess, ExpandMore } from "@mui/icons-material";
-import { ScanStatus, StatusCircle, flags } from "../Assets";
+import {
+  ChevronLeft,
+  ChevronRight,
+  ExpandLess,
+  ExpandMore,
+} from "@mui/icons-material";
+import { ScanStatus, StatusCircle } from "../CustomComponents";
+import { flags, timings } from "../ScanOptions";
 
 const Dashboard: React.FC = React.memo(() => {
   const theme = useTheme();
   const dispatch = useDispatch<Dispatch<AnyAction>>();
-
-  const { devices, selectedFlag, selectedTarget, scanStatus } = useSelector(
-    selectDashboardFields
-  );
-
+  const { devices, selectedFlag, selectedTarget, selectedTiming, scanStatus } =
+    useSelector(selectDashboardFields);
   const [statusMessage, setStatusMessage] = useState<string>();
+  const [validation, setValidation] = useState<boolean>(false);
+  const [showScanTable, setShowScanTable] = useState<boolean>(false);
+  const [showScanOptions, setShowScanOptions] = useState<boolean>(true);
+  const [showScanMessage, setShowScanMessage] = useState<boolean>(true);
+
+  const HandleValidationErrors = (): void => {
+    if (selectedTarget.length < 2 && !selectedFlag && !selectedTiming) {
+      HandleMessage("Scan requires more information.", "info");
+      setValidation(false);
+    } else {
+      setValidation(true);
+    }
+  };
+
+  const HandleMessage = (message: string, status: string) => {
+    setStatusMessage(message);
+    dispatch(setScanStatus(status));
+    setShowScanMessage(true);
+  };
 
   const runScan = async (
     selectedFlag: string,
-    selectedTarget: string
+    selectedTarget: string,
+    selectedTiming: string
   ): Promise<void> => {
-    try {
-      if (selectedFlag && selectedTarget) {
+    HandleValidationErrors();
+    if (validation === true) {
+      try {
         const url = new URL("/scan", import.meta.env.VITE_BASE_URL);
         url.searchParams.append("flag", selectedFlag);
         url.searchParams.append("target", encodeURIComponent(selectedTarget));
-        dispatch(setScanStatus("pending"));
+        url.searchParams.append("timing", selectedTiming);
+        HandleMessage("", "pending");
         const res = await fetch(url.href);
 
         if (!res.ok) {
-          setStatusMessage("Scan failed.");
-          dispatch(setScanStatus("error"));
+          HandleMessage("Scan failed.", "error");
           return;
         }
 
@@ -66,120 +91,163 @@ const Dashboard: React.FC = React.memo(() => {
         }));
 
         dispatch(setDevices(deviceObj));
-        setStatusMessage("Scan succeded.");
-        dispatch(setScanStatus("success"));
+        if (data.length) {
+          HandleMessage("Scan succeded.", "success");
+        }
+      } catch (error) {
+        HandleMessage("Server error.", "error");
       }
-    } catch (error) {
-      setStatusMessage("Server error.");
-      dispatch(setScanStatus("error"));
     }
-    debounce(() => {
-      setStatusMessage("");
-      dispatch(setScanStatus(""));
-    }, 5000);
-  };
-
-  const [tableCollapsed, setTableCollapsed] = useState<boolean>(false);
-  const [scanOptionsCollapsed, setScanOptionsCollapsed] =
-    useState<boolean>(false);
-
-  const CollapseTable = (): void => {
-    setTableCollapsed(!tableCollapsed);
-  };
-  const CollapseScanOptions = (): void => {
-    setScanOptionsCollapsed(!scanOptionsCollapsed);
   };
 
   return (
     <Box
-      bgcolor={theme.palette.background.paper}
-      width="100%"
-      height="100%"
-      display="flex"
-      flexDirection="column"
+      sx={{
+        backgroundColor: theme.palette.background.paper,
+        display: "flex",
+        flexDirection: "column",
+        width: "100%",
+        height: "100%",
+      }}
     >
-      <Box display="flex" flexDirection="column" height="100%" width="100%">
+      {scanStatus && (
+        <Collapse in={showScanMessage}>
+          <ScanStatus
+            scanStatus={scanStatus}
+            message={statusMessage}
+            onClose={() => setShowScanMessage(false)}
+          />
+        </Collapse>
+      )}
+      {/* BODY CONTAINER */}
+      <Box
+        sx={{
+          display: "flex",
+          height: "100%",
+          flexDirection: "column",
+        }}
+      >
+        {/* SCAN OPTIONS MENU */}
         <Box
-          display="flex"
-          flexDirection="column"
-          position="absolute"
-          right={0}
+          sx={{
+            position: "absolute",
+            display: "flex",
+            flexDirection: "column",
+            right: "0",
+          }}
         >
-          <Box
-            sx={{
-              display: scanOptionsCollapsed ? "none" : "flex",
-              flexDirection: "column",
-              p: "1rem",
-              gap: "1rem",
-              zIndex: "2",
-              backgroundColor: theme.palette.background.default,
-            }}
-          >
-            <FormControl>
-              <InputLabel size="small" aria-invalid id="flags">
-                Flag
-              </InputLabel>
-              <Select
-                labelId="flags"
-                size="small"
-                input={<OutlinedInput label="Flag" />}
-                value={selectedFlag}
-                onChange={(e) => dispatch(setSelectedFlag(e.target.value))}
-              >
-                {flags.map((flag) => (
-                  <MenuItem key={flag.Name} value={flag.Flag}>
-                    {flag.Name + " " + flag.Flag}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <TextField
-              label="Target"
-              spellCheck="false"
-              size="small"
-              onChange={(e) => dispatch(setSelectedTarget(e.target.value))}
-            />
-            <Button
-              variant="outlined"
-              onClick={() => runScan(selectedFlag, selectedTarget)}
-            >
-              Scan
-            </Button>
-          </Box>
           <Button
-            variant="contained"
+            variant="text"
+            disableTouchRipple
             sx={{
-              height: "1.5rem",
-              zIndex: "100",
-              color: theme.palette.primary.main,
+              boxShadow: "none",
+              display: "flex",
+              justifyContent: "start",
+              color: theme.palette.text.primary,
+              borderBottomRightRadius: "0",
               borderTopLeftRadius: "0",
               borderTopRightRadius: "0",
-              borderBottomRightRadius: "0",
+              opacity: showScanOptions ? "1" : "0.5",
+              borderBottomLeftRadius: showScanOptions ? "0" : "",
               backgroundColor: theme.palette.background.default,
+              "&:hover": {
+                backgroundColor: theme.palette.background.default,
+              },
             }}
-            onClick={CollapseScanOptions}
+            onClick={() => setShowScanOptions(!showScanOptions)}
           >
-            {scanOptionsCollapsed ? <ExpandMore /> : <ExpandLess />}
+            {showScanOptions ? <ChevronRight /> : <ChevronLeft />}
           </Button>
+          <Collapse orientation="horizontal" in={showScanOptions}>
+            <Box display="flex">
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  borderBottomLeftRadius: "0.5rem",
+                  p: "1rem",
+                  gap: "1rem",
+                  backgroundColor: theme.palette.background.default,
+                }}
+              >
+                {/* Flags */}
+                <FormControl>
+                  <InputLabel size="small" aria-invalid id="flag">
+                    Flag
+                  </InputLabel>
+                  <Select
+                    labelId="flag"
+                    size="small"
+                    input={<OutlinedInput label="Flag" />}
+                    value={selectedFlag}
+                    onChange={(e) => dispatch(setSelectedFlag(e.target.value))}
+                  >
+                    {flags.map((i) => (
+                      <MenuItem key={i.Description} value={i.Flag}>
+                        {i.Description + " " + i.Flag}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+                {/*  Target */}
+                <TextField
+                  label="Target"
+                  spellCheck="false"
+                  size="small"
+                  type="text"
+                  onChange={(e) => dispatch(setSelectedTarget(e.target.value))}
+                />
+                {/*  Timing */}
+                <FormControl>
+                  <InputLabel size="small" aria-invalid id="timing">
+                    Timing
+                  </InputLabel>
+                  <Select
+                    labelId="timing"
+                    size="small"
+                    input={<OutlinedInput label="Timing" />}
+                    value={selectedTiming}
+                    onChange={(e) =>
+                      dispatch(setSelectedTiming(e.target.value))
+                    }
+                  >
+                    {timings.map((i) => (
+                      <MenuItem key={i.Description} value={i.Timing}>
+                        {i.Description + " " + i.Timing}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+                <Button
+                  variant="outlined"
+                  sx={{
+                    backgroundColor:
+                      theme.palette.mode === "dark"
+                        ? theme.palette.info.dark
+                        : theme.palette.info.light,
+                    color: theme.palette.text.primary,
+                  }}
+                  onClick={() =>
+                    runScan(selectedFlag, selectedTarget, selectedTiming)
+                  }
+                >
+                  Scan
+                </Button>
+              </Box>
+            </Box>
+          </Collapse>
         </Box>
-        <Box display="flex" height="100%">
-          <Box
-            sx={{
-              width: "100%",
-              height: "2rem",
-              position: "absolute",
-            }}
-          >
-            {scanStatus === "pending" ? (
-              <ScanStatus scanStatus={scanStatus} />
-            ) : null}
-            {scanStatus === "success" || scanStatus === "error" ? (
-              <ScanStatus scanStatus={scanStatus} message={statusMessage} />
-            ) : null}
-          </Box>
-
+        {/* SCAN OPTIONS MENU END */}
+        {/* NETWORK GRAPH CONTAINER*/}
+        <Box
+          sx={{
+            display: "flex",
+            height: "100%",
+          }}
+        >
+          {/* NETWORK CHART & TOOLTIP */}
           {devices.map((device: Device, i: number) => (
-            <Box key={i} width="100%">
+            <Box key={i}>
               <Typography>{device.hostname}</Typography>
               <Typography>{device.ipAddress}</Typography>
               <Typography>{device.macAddress}</Typography>
@@ -195,17 +263,27 @@ const Dashboard: React.FC = React.memo(() => {
               ))}
             </Box>
           ))}
+          {/* NETWORK CHART & TOOLTIP END*/}
         </Box>
-        <Button onClick={CollapseTable}>
-          {tableCollapsed ? <ExpandLess /> : <ExpandMore />}
-        </Button>
+        {/* NETWORK GRAPH CONTAINER END*/}
+        {/* TABLE CONTAINER */}
         <Box
-          display="flex"
-          flexDirection="column"
-          height={tableCollapsed ? "0" : "auto"}
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+          }}
         >
-          <NetworkTable />
+          <Button
+            sx={{ color: theme.palette.text.primary }}
+            onClick={() => setShowScanTable(!showScanTable)}
+          >
+            {showScanTable ? <ExpandMore /> : <ExpandLess />}
+          </Button>
+          <Collapse in={showScanTable}>
+            <NetworkTable />
+          </Collapse>
         </Box>
+        {/* TABLE CONTAINER END*/}
       </Box>
     </Box>
   );
