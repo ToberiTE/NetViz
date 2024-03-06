@@ -1,8 +1,8 @@
 import { combineReducers, configureStore } from '@reduxjs/toolkit';
-import dashboardReducer from './reducers/dashboardSlice';
+import Reducer from './reducers/Slice';
 
 const rootReducer = combineReducers({
-    dashboardReducer,
+    Reducer,
 })
 
 const store = configureStore({

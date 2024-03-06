@@ -7,10 +7,10 @@ import {
 import { Box, Button, ThemeProvider, useTheme } from "@mui/material";
 import FileDownloadIcon from "@mui/icons-material/FileDownload";
 import { mkConfig, generateCsv, download } from "export-to-csv";
-import { Device } from "../../reducers/dashboardSlice";
+import { Device } from "../../reducers/Slice";
 import { useSelector } from "react-redux";
-import { selectDashboardFields } from "../../reducers/selectors";
-import { StatusCircle } from "../CustomComponents";
+import { selectFields } from "../../reducers/selectors";
+import { StatusCircle } from "./assets/customComponents";
 
 const csvConfig = mkConfig({
   fieldSeparator: ",",
@@ -20,7 +20,7 @@ const csvConfig = mkConfig({
 
 const ProjectTable = () => {
   const theme = useTheme();
-  const { devices } = useSelector(selectDashboardFields);
+  const { devices } = useSelector(selectFields);
 
   const columns = useMemo<MRT_ColumnDef<Device>[]>(
     () => [
