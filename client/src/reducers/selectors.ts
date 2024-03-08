@@ -14,7 +14,6 @@ export const selectFields = createSelector(
         scanStatus: state.scanStatus,
         discoveredHosts: state.discoveredHosts,
         statusMessage: state.statusMessage,
-        validation: state.validation,
         showScanTable: state.showScanTable,
         showScanOptions: state.showScanOptions,
         showScanMessage: state.showScanMessage,

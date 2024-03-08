@@ -3,6 +3,7 @@ import {
   Button,
   Collapse,
   FormControl,
+  FormHelperText,
   InputLabel,
   MenuItem,
   OutlinedInput,
@@ -18,14 +19,13 @@ import {
   setSelectedScanType,
   setSelectedTarget,
   setSelectedTiming,
-  setValidation,
   setStatusMessage,
   setShowScanMessage,
   setShowScanOptions,
   setShowScanTable,
   setSelectedPorts,
 } from "../../reducers/Slice";
-import React from "react";
+import React, { useState } from "react";
 import { selectFields } from "../../reducers/selectors";
 import { AnyAction, Dispatch } from "@reduxjs/toolkit";
 import { useDispatch, useSelector } from "react-redux";
@@ -45,19 +45,75 @@ const Dashboard: React.FC = React.memo(() => {
     selectedTiming,
     selectedPorts,
     scanStatus,
-    validation,
     showScanMessage,
     showScanOptions,
     showScanTable,
     statusMessage,
   } = useSelector(selectFields);
 
-  const HandleValidationErrors = (): void => {
-    if (selectedTarget.length < 2 && !selectedScanType && !selectedTiming) {
-      HandleMessage("Scan requires more information.", "info");
-      dispatch(setValidation(false));
-    } else {
-      dispatch(setValidation(true));
+  const [errors, setErrors] = useState({
+    selectedScanType: "",
+    selectedTarget: "",
+    selectedTiming: "",
+    selectedPorts: "",
+  });
+
+  const validateInput = () => {
+    const validateIpAddress = (addr: string): boolean => {
+      const ipv4Regex = /^(\d{1,3}\.){3}\d{1,3}(\/\d{1,2})?$/;
+
+      // Check for IPv4 with optional CIDR
+      if (ipv4Regex.test(addr)) {
+        // Validate each octet is between 0 and 255
+        const parts = addr.split("/");
+        const octets = parts[0].split(".");
+        for (let i = 0; i < octets.length; i++) {
+          if (parseInt(octets[i], 10) > 255) {
+            return false;
+          }
+        }
+        // Check if CIDR is between 0 and 32
+        if (
+          parts[1] &&
+          (parseInt(parts[1], 10) < 0 || parseInt(parts[1], 10) > 32)
+        ) {
+          return false;
+        }
+        return true;
+      }
+      return false;
+    };
+
+    HandleMessage("Scan requires more information.", "info");
+    const errors: any = {};
+
+    if (!selectedTarget || !validateIpAddress(selectedTarget)) {
+      errors.selectedTarget = {};
+    }
+    if (!selectedScanType) {
+      errors.selectedScanType = {};
+    }
+    if (!selectedTiming) {
+      errors.selectedTiming = {};
+    }
+    const regex = /^(\d+(-\d+)?)(,\d+(-\d+)?)*$/;
+    if (!selectedPorts && regex.test(selectedPorts)) {
+      errors.selectedPorts = "Ex: 80 | 80-500 | 80,443 | http";
+    }
+
+    setErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleSubmit = (abortScan?: boolean) => {
+    if (validateInput()) {
+      runScan(
+        selectedScanType,
+        selectedTarget,
+        selectedTiming,
+        selectedPorts,
+        abortScan
+      );
     }
   };
 
@@ -72,67 +128,57 @@ const Dashboard: React.FC = React.memo(() => {
     selectedTarget: string,
     selectedTiming: string,
     selectedPorts?: string,
-    cancellationToken?: any
+    abortScan?: boolean
   ): Promise<void> => {
-    HandleValidationErrors();
-    if (validation === true) {
-      try {
-        const url = new URL("/scan", import.meta.env.VITE_BASE_URL);
-        url.searchParams.append("scanType", selectedScanType);
-        url.searchParams.append("target", encodeURIComponent(selectedTarget));
-        url.searchParams.append("timing", selectedTiming);
-        if (selectedPorts) {
-          url.searchParams.append("ports", selectedPorts);
-        }
+    try {
+      const url = new URL("/scan", import.meta.env.VITE_BASE_URL);
+      url.searchParams.append("scanType", selectedScanType);
+      url.searchParams.append("target", encodeURIComponent(selectedTarget));
+      url.searchParams.append("timing", selectedTiming);
+      selectedPorts && url.searchParams.append("ports", selectedPorts);
+      abortScan && url.searchParams.append("abortScan", "true");
 
-        HandleMessage("", "pending");
+      HandleMessage("", "pending");
 
-        const res = await fetch(
-          url.href,
-          cancellationToken?.register // Pass the signal from cancellationToken
-        );
+      const res = await fetch(url.href);
 
-        if (cancellationToken?.isCancellationRequested) {
-          HandleMessage("Scan stopped.", "info");
-          return;
-        }
-
-        if (!res.ok) {
-          HandleMessage("Server error.", "error");
-          return;
-        }
-
-        const data = await res.json();
-
-        const deviceObj: Device[] = data.devices.map((item: any) => ({
-          hostname: item.hostname,
-          ipAddress: item.ipAddress,
-          macAddress: item.macAddress,
-          vendor: item.vendor,
-          status: item.status,
-          openPorts: item.openPorts,
-        }));
-
-        const hosts: string[] = data.devices.map((item: any) => ({
-          ipAddress: item.ipAddress,
-        }));
-
-        if (hosts.length > 0) {
-          dispatch(setDiscoveredHosts(hosts));
-        }
-
-        if (data.devices.length) {
-          dispatch(setDevices(deviceObj));
-        }
-
-        if (data.scanSummary) {
-          HandleMessage(`Scan succeeded: ${data.scanSummary}`, "success");
-        }
-      } catch (error) {
-        HandleMessage("Scan failed.", "error");
+      if (!abortScan && !res.ok) {
+        HandleMessage("Server error.", "error");
+        return;
       }
-    } else {
-      return;
+
+      const data = await res.json();
+
+      const deviceObj: Device[] = data.devices.map((item: any) => ({
+        hostname: item.hostname,
+        ipAddress: item.ipAddress,
+        macAddress: item.macAddress,
+        vendor: item.vendor,
+        status: item.status,
+        openPorts: item.openPorts,
+      }));
+
+      const hosts: string[] = data.devices.map((item: any) => ({
+        ipAddress: item.ipAddress,
+      }));
+
+      if (hosts.length > 0) {
+        dispatch(setDiscoveredHosts(hosts));
+      }
+
+      if (data.devices.length) {
+        dispatch(setDevices(deviceObj));
+      }
+
+      if (data.scanSummary) {
+        HandleMessage(`Scan succeeded: ${data.scanSummary}`, "success");
+      }
+    } catch (error: any) {
+      if (abortScan) {
+        HandleMessage("Scan aborted.", "info");
+      } else {
+        HandleMessage("An error occurred.", "error");
+      }
     }
   };
 
@@ -214,17 +260,17 @@ const Dashboard: React.FC = React.memo(() => {
 
             <Collapse orientation="vertical" in={showScanOptions}>
               <Box
-                sx={{
+                style={{
                   display: "flex",
                   flexDirection: "column",
                   borderBottomLeftRadius: "0.5rem",
-                  p: "1rem",
+                  padding: "1rem",
                   gap: "1.5rem",
                   backgroundColor: theme.palette.background.default,
                 }}
               >
                 {/* ScanType */}
-                <FormControl>
+                <FormControl required error={!!errors.selectedScanType}>
                   <InputLabel size="small" aria-invalid id="scanType">
                     Scan type
                   </InputLabel>
@@ -247,17 +293,17 @@ const Dashboard: React.FC = React.memo(() => {
 
                 {/*  Target */}
                 <TextField
+                  value={selectedTarget}
+                  error={!!errors.selectedTarget}
                   label="Target"
                   spellCheck="false"
                   size="small"
                   type="text"
-                  onChange={(e) => {
-                    dispatch(setSelectedTarget(e.target.value));
-                  }}
+                  onChange={(e) => dispatch(setSelectedTarget(e.target.value))}
                 />
 
                 {/*  Timing */}
-                <FormControl>
+                <FormControl required error={!!errors.selectedTiming}>
                   <InputLabel size="small" aria-invalid id="timing">
                     Timing
                   </InputLabel>
@@ -280,14 +326,15 @@ const Dashboard: React.FC = React.memo(() => {
 
                 {/*  Ports */}
                 <TextField
-                  label="Port / Ports"
+                  error={!!errors.selectedPorts}
+                  label="Port / Ports / Protocol"
                   spellCheck="false"
+                  value={selectedPorts}
                   size="small"
                   type="text"
-                  onChange={(e) => {
-                    dispatch(setSelectedPorts(e.target.value));
-                  }}
+                  onChange={(e) => dispatch(setSelectedPorts(e.target.value))}
                 />
+                <FormHelperText>{errors.selectedPorts}</FormHelperText>
                 {scanStatus === "pending" ? (
                   <Button
                     variant="outlined"
@@ -298,12 +345,13 @@ const Dashboard: React.FC = React.memo(() => {
                           : theme.palette.error.light,
                       color: theme.palette.text.primary,
                     }}
-                    onClick={async () => await runScan("", "", "", "", true)}
+                    onClick={() => handleSubmit(true)}
                   >
                     Stop
                   </Button>
                 ) : (
                   <Button
+                    type="submit"
                     variant="outlined"
                     sx={{
                       backgroundColor:
@@ -312,14 +360,7 @@ const Dashboard: React.FC = React.memo(() => {
                           : theme.palette.info.light,
                       color: theme.palette.text.primary,
                     }}
-                    onClick={async () =>
-                      await runScan(
-                        selectedScanType,
-                        selectedTarget,
-                        selectedTiming,
-                        selectedPorts ?? null
-                      )
-                    }
+                    onClick={() => handleSubmit(false)}
                   >
                     Scan
                   </Button>

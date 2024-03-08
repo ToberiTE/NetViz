@@ -24,11 +24,11 @@ const NetworkGraph = () => {
   const config = {
     width: 1400,
     height: showScanTable ? 450 : 800,
-
+    highlightDegree: 0,
+    nodeHighlightBehavior: true,
     node: {
       color: "blue",
-      highlightColor: "yellow",
-      highlightStrokeColor: "yellow",
+      highlightColor: "lightblue",
       fontColor: theme.palette.text.primary,
       size: 100,
     },
@@ -46,7 +46,7 @@ const NetworkGraph = () => {
     if (node) {
       dispatch(
         setSelectedDeviceInfo(
-          <>
+          <Box>
             <Typography>{node.hostname}</Typography>
             <Typography>{node.ipAddress}</Typography>
             <Typography>{node.macAddress}</Typography>
@@ -61,14 +61,14 @@ const NetworkGraph = () => {
                 {port.state}
               </Typography>
             ))}
-          </>
+          </Box>
         )
       );
       dispatch(setShowSelectedDeviceInfo(true));
     }
   };
 
-  const onClickOutside = (): void => {
+  const onClickOutsideNode = (): void => {
     dispatch(setShowSelectedDeviceInfo(false));
   };
 
@@ -91,7 +91,7 @@ const NetworkGraph = () => {
   };
 
   return (
-    <Box onClick={onClickOutside}>
+    <Box onClick={onClickOutsideNode}>
       <Graph
         id="graph-id"
         data={data}

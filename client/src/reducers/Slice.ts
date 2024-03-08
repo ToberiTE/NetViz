@@ -27,7 +27,6 @@ export interface State
     scanStatus: string,
     discoveredHosts: any[],
     statusMessage: string,
-    validation: boolean,
     showScanTable: boolean,
     showScanOptions: boolean,
     showScanMessage: boolean,
@@ -45,7 +44,6 @@ const initialState: State = {
     scanStatus: "",
     discoveredHosts: [],
     statusMessage: "",
-    validation: false,
     showScanTable: true,
     showScanOptions: true,
     showScanMessage: false,
@@ -89,10 +87,6 @@ export const Slice = createSlice({
         {
             state.statusMessage = action.payload;
         },
-        setValidation: (state, action: PayloadAction<boolean>) =>
-        {
-            state.validation = action.payload;
-        },
         setShowScanTable: (state, action: PayloadAction<boolean>) =>
         {
             state.showScanTable = action.payload;
@@ -117,6 +111,6 @@ export const Slice = createSlice({
     },
 });
 
-export const { setDevices, setSelectedScanType, setSelectedTarget, setSelectedTiming, setSelectedPorts, setScanStatus, setDiscoveredHosts, setStatusMessage, setValidation, setShowScanTable, setShowScanOptions, setShowScanMessage, setSelectedDeviceInfo, setShowSelectedDeviceInfo } = Slice.actions;
+export const { setDevices, setSelectedScanType, setSelectedTarget, setSelectedTiming, setSelectedPorts, setScanStatus, setDiscoveredHosts, setStatusMessage, setShowScanTable, setShowScanOptions, setShowScanMessage, setSelectedDeviceInfo, setShowSelectedDeviceInfo } = Slice.actions;
 
 export default Slice.reducer;

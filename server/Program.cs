@@ -2,11 +2,12 @@ using System.Diagnostics;
 using Server;
 using Microsoft.AspNetCore.Http.Json;
 using System.Xml.Linq;
+using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.Configure<JsonOptions>(options =>
+builder.Services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options =>
 {
     options.SerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
 });
@@ -31,12 +32,16 @@ app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
-app.MapGet("/scan", async (string scanType, string target, string timing, string? ports, CancellationToken cancellationToken) =>
+app.MapGet("/scan", async (string scanType, string target, string timing, string? ports, bool? abortScan, CancellationToken cancellationToken) =>
 {
     try
     {
-        var (devices, scanSummary) = await StartNmapScan(scanType, target, timing, ports, cancellationToken);
+        var (devices, scanSummary) = await StartNmapScan(scanType, target, timing, ports, abortScan, cancellationToken);
         return Results.Ok(new { Devices = devices, ScanSummary = scanSummary });
+    }
+    catch (OperationCanceledException)
+    {
+        return Results.BadRequest(new { Error = "Operation cancelled." });
     }
     catch (ScanException ex)
     {
@@ -50,8 +55,9 @@ app.MapGet("/scan", async (string scanType, string target, string timing, string
 
 app.Run();
 
-static async Task<(List<DeviceModel>, string?)> StartNmapScan(string scanType, string target, string timing, string? ports, CancellationToken cancellationToken)
+static async Task<(List<DeviceModel>, string?)> StartNmapScan(string scanType, string target, string timing, string? ports, bool? abortScan, CancellationToken cancellationToken)
 {
+
     string nmapPath = @"C:\Program Files (x86)\Nmap\nmap.exe"; // syspath or executable.
     string decodedTarget = Uri.UnescapeDataString(target);
     string portString = string.Empty;
@@ -78,14 +84,28 @@ static async Task<(List<DeviceModel>, string?)> StartNmapScan(string scanType, s
 
             using (var registration = cancellationToken.Register(process.Kill))
             {
+
+                if (cancellationToken.IsCancellationRequested || abortScan == true)
+                {
+                    foreach (var node in Process.GetProcessesByName("Nmap"))
+                    {
+                        node.Kill();
+                    }
+                }
                 await process.WaitForExitAsync(cancellationToken);
             }
 
-            if (process.ExitCode != 0)
+            if (process.ExitCode != 0 && abortScan == false)
             {
                 // Handle non-zero exit code.
                 string errorOutput = await process.StandardError.ReadToEndAsync(cancellationToken);
                 throw new ScanException("Scan failed.", errorOutput);
+            }
+            if (process.ExitCode != 0 && abortScan == true)
+            {
+                // Handle aborted scan.
+                string errorOutput = await process.StandardError.ReadToEndAsync(cancellationToken);
+                throw new ScanException("Scan aborted.", errorOutput);
             }
         }
 
@@ -169,3 +189,4 @@ class ScanException(string message, string errorOutput) : Exception(message)
 {
     public string ErrorOutput { get; } = errorOutput;
 }
+
