@@ -1,5 +1,4 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { ReactElement } from "react";
 
 export type Device = {
     hostname: string,
@@ -30,8 +29,7 @@ export interface State
     showScanTable: boolean,
     showScanOptions: boolean,
     showScanMessage: boolean,
-    selectedDeviceInfo: ReactElement | null,
-    showSelectedDeviceInfo: boolean,
+    selectedDeviceInfo: Device | null,
 
 }
 
@@ -48,7 +46,6 @@ const initialState: State = {
     showScanOptions: true,
     showScanMessage: false,
     selectedDeviceInfo: null,
-    showSelectedDeviceInfo: false,
 };
 
 export const Slice = createSlice({
@@ -79,7 +76,7 @@ export const Slice = createSlice({
         {
             state.scanStatus = action.payload;
         },
-        setDiscoveredHosts: (state, action: PayloadAction<string[]>) =>
+        setDiscoveredHosts: (state, action: PayloadAction<any[]>) =>
         {
             state.discoveredHosts = action.payload;
         },
@@ -99,18 +96,13 @@ export const Slice = createSlice({
         {
             state.showScanMessage = action.payload;
         },
-        setSelectedDeviceInfo: (state, action: PayloadAction<ReactElement | null>) =>
+        setSelectedDeviceInfo: (state, action: PayloadAction<Device | null>) =>
         {
             state.selectedDeviceInfo = action.payload;
         },
-        setShowSelectedDeviceInfo: (state, action: PayloadAction<boolean>) =>
-        {
-            state.showSelectedDeviceInfo = action.payload;
-        },
-
     },
 });
 
-export const { setDevices, setSelectedScanType, setSelectedTarget, setSelectedTiming, setSelectedPorts, setScanStatus, setDiscoveredHosts, setStatusMessage, setShowScanTable, setShowScanOptions, setShowScanMessage, setSelectedDeviceInfo, setShowSelectedDeviceInfo } = Slice.actions;
+export const { setDevices, setSelectedScanType, setSelectedTarget, setSelectedTiming, setSelectedPorts, setScanStatus, setDiscoveredHosts, setStatusMessage, setShowScanTable, setShowScanOptions, setShowScanMessage, setSelectedDeviceInfo } = Slice.actions;
 
 export default Slice.reducer;

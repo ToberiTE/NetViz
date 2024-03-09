@@ -31,7 +31,13 @@ import { AnyAction, Dispatch } from "@reduxjs/toolkit";
 import { useDispatch, useSelector } from "react-redux";
 import NetworkTable from "./NetworkTable";
 import { ExpandLess, ExpandMore } from "@mui/icons-material";
-import { ScanStatus } from "./assets/customComponents";
+import {
+  DeviceInfo,
+  ScanButton,
+  ScanStatus,
+  ValidateIpAddress,
+  ValidatePorts,
+} from "./assets/customComponents";
 import { scanTypes, timings } from "./assets/scanOptions";
 import NetworkChart from "./NetworkChart";
 
@@ -49,6 +55,7 @@ const Dashboard: React.FC = React.memo(() => {
     showScanOptions,
     showScanTable,
     statusMessage,
+    selectedDeviceInfo,
   } = useSelector(selectFields);
 
   const [errors, setErrors] = useState({
@@ -59,36 +66,11 @@ const Dashboard: React.FC = React.memo(() => {
   });
 
   const validateInput = () => {
-    const validateIpAddress = (addr: string): boolean => {
-      const ipv4Regex = /^(\d{1,3}\.){3}\d{1,3}(\/\d{1,2})?$/;
-
-      // Check for IPv4 with optional CIDR
-      if (ipv4Regex.test(addr)) {
-        // Validate each octet is between 0 and 255
-        const parts = addr.split("/");
-        const octets = parts[0].split(".");
-        for (let i = 0; i < octets.length; i++) {
-          if (parseInt(octets[i], 10) > 255) {
-            return false;
-          }
-        }
-        // Check if CIDR is between 0 and 32
-        if (
-          parts[1] &&
-          (parseInt(parts[1], 10) < 0 || parseInt(parts[1], 10) > 32)
-        ) {
-          return false;
-        }
-        return true;
-      }
-      return false;
-    };
-
     HandleMessage("Scan requires more information.", "info");
     const errors: any = {};
 
-    if (!selectedTarget || !validateIpAddress(selectedTarget)) {
-      errors.selectedTarget = {};
+    if (!selectedTarget || !ValidateIpAddress(selectedTarget)) {
+      errors.selectedTarget = "Valid IPv4, mask optional";
     }
     if (!selectedScanType) {
       errors.selectedScanType = {};
@@ -96,9 +78,8 @@ const Dashboard: React.FC = React.memo(() => {
     if (!selectedTiming) {
       errors.selectedTiming = {};
     }
-    const regex = /^(\d+(-\d+)?)(,\d+(-\d+)?)*$/;
-    if (!selectedPorts && regex.test(selectedPorts)) {
-      errors.selectedPorts = "Ex: 80 | 80-500 | 80,443 | http";
+    if (selectedPorts && !ValidatePorts(selectedPorts)) {
+      errors.selectedPorts = "Ex: 80 | 80-500 | 80,443";
     }
 
     setErrors(errors);
@@ -188,13 +169,11 @@ const Dashboard: React.FC = React.memo(() => {
         backgroundColor: theme.palette.background.paper,
         display: "flex",
         flexDirection: "column",
-        width: "100%",
-        height: "100%",
       }}
     >
       {/* SCAN STATUS MESSAGE */}
       {scanStatus && (
-        <Collapse in={showScanMessage} sx={{ zIndex: "2" }}>
+        <Collapse in={showScanMessage} sx={{ zIndex: "50" }}>
           <ScanStatus
             scanStatus={scanStatus}
             message={statusMessage}
@@ -202,7 +181,7 @@ const Dashboard: React.FC = React.memo(() => {
           />
         </Collapse>
       )}
-      {/* SCAN STATUS MESSAGE END*/}
+      {/* SCAN STATUS MESSAGE END */}
 
       {/* BODY CONTAINER */}
       <Box
@@ -212,31 +191,65 @@ const Dashboard: React.FC = React.memo(() => {
           flexDirection: "column",
         }}
       >
-        {/* NETWORK GRAPH CONTAINER*/}
+        {/* NETWORK GRAPH CONTAINER */}
         <Box
           sx={{
             display: "flex",
             height: "100%",
             position: "relative",
+            backgroundColor: theme.palette.background.paper,
           }}
         >
-          {/* NETWORK CHART  */}
-          {devices.length > 0 && <NetworkChart />}
+          {/* SELECTED DEVICE CONTAINER */}
+          {selectedDeviceInfo && (
+            <Box
+              sx={{
+                backgroundColor: theme.palette.background.default,
+                zIndex: 1,
+                padding: "1rem",
+                display: "flex",
+                flexDirection: "column",
+                position: "absolute",
+                overflowY: "auto",
+                height: "fit-content",
+                top: 0,
+                left: 0,
+                bottom: 0,
+              }}
+            >
+              <DeviceInfo device={selectedDeviceInfo} />
+            </Box>
+          )}
+          {/* SELECTED DEVICE CONTAINER END */}
+          {/* NETWORK CHART */}
+          {devices.length > 0 && (
+            <Box
+              sx={{
+                position: "absolute",
+                width: "100%",
+                height: "100%",
+              }}
+            >
+              <NetworkChart />
+            </Box>
+          )}
 
-          {/* NETWORK CHART END*/}
+          {/* NETWORK CHART END */}
 
           {/* SCAN OPTIONS CONTAINER */}
           <Box
             sx={{
               display: "flex",
               flexDirection: "column",
-              position: "fixed",
-              right: "0",
+              position: "absolute",
+              right: 0,
+              bottom: 0,
+              top: 0,
+              height: "fit-content",
               zIndex: 1,
             }}
           >
             <Button
-              variant="text"
               disableTouchRipple
               sx={{
                 gap: "0.5rem",
@@ -245,7 +258,6 @@ const Dashboard: React.FC = React.memo(() => {
                 borderBottomRightRadius: "0",
                 borderTopLeftRadius: "0",
                 borderTopRightRadius: "0",
-                opacity: showScanOptions ? "1" : "0.5",
                 borderBottomLeftRadius: showScanOptions ? "0" : "",
                 backgroundColor: theme.palette.background.default,
                 "&:hover": {
@@ -260,7 +272,7 @@ const Dashboard: React.FC = React.memo(() => {
 
             <Collapse orientation="vertical" in={showScanOptions}>
               <Box
-                style={{
+                sx={{
                   display: "flex",
                   flexDirection: "column",
                   borderBottomLeftRadius: "0.5rem",
@@ -291,7 +303,7 @@ const Dashboard: React.FC = React.memo(() => {
                   </Select>
                 </FormControl>
 
-                {/*  Target */}
+                {/* Target */}
                 <TextField
                   value={selectedTarget}
                   error={!!errors.selectedTarget}
@@ -301,8 +313,11 @@ const Dashboard: React.FC = React.memo(() => {
                   type="text"
                   onChange={(e) => dispatch(setSelectedTarget(e.target.value))}
                 />
+                {errors.selectedTarget && (
+                  <FormHelperText>{errors.selectedTarget}</FormHelperText>
+                )}
 
-                {/*  Timing */}
+                {/* Timing */}
                 <FormControl required error={!!errors.selectedTiming}>
                   <InputLabel size="small" aria-invalid id="timing">
                     Timing
@@ -324,53 +339,47 @@ const Dashboard: React.FC = React.memo(() => {
                   </Select>
                 </FormControl>
 
-                {/*  Ports */}
+                {/* Ports */}
                 <TextField
                   error={!!errors.selectedPorts}
-                  label="Port / Ports / Protocol"
+                  label="Port / Ports"
                   spellCheck="false"
                   value={selectedPorts}
                   size="small"
                   type="text"
                   onChange={(e) => dispatch(setSelectedPorts(e.target.value))}
                 />
-                <FormHelperText>{errors.selectedPorts}</FormHelperText>
+                {errors.selectedPorts && (
+                  <FormHelperText>{errors.selectedPorts}</FormHelperText>
+                )}
+
                 {scanStatus === "pending" ? (
-                  <Button
-                    variant="outlined"
-                    sx={{
-                      backgroundColor:
-                        theme.palette.mode === "dark"
-                          ? theme.palette.error.dark
-                          : theme.palette.error.light,
-                      color: theme.palette.text.primary,
-                    }}
-                    onClick={() => handleSubmit(true)}
-                  >
-                    Stop
-                  </Button>
+                  <ScanButton
+                    onclick={() => handleSubmit(true)}
+                    bgColor={
+                      theme.palette.mode === "dark"
+                        ? theme.palette.error.dark
+                        : theme.palette.error.light
+                    }
+                    label="Stop"
+                  />
                 ) : (
-                  <Button
-                    type="submit"
-                    variant="outlined"
-                    sx={{
-                      backgroundColor:
-                        theme.palette.mode === "dark"
-                          ? theme.palette.info.dark
-                          : theme.palette.info.light,
-                      color: theme.palette.text.primary,
-                    }}
-                    onClick={() => handleSubmit(false)}
-                  >
-                    Scan
-                  </Button>
+                  <ScanButton
+                    onclick={() => handleSubmit(false)}
+                    bgColor={
+                      theme.palette.mode === "dark"
+                        ? theme.palette.info.dark
+                        : theme.palette.info.light
+                    }
+                    label="Scan"
+                  />
                 )}
               </Box>
             </Collapse>
           </Box>
           {/* SCAN OPTIONS CONTAINER END */}
         </Box>
-        {/* NETWORK GRAPH CONTAINER END*/}
+        {/* NETWORK GRAPH CONTAINER END */}
 
         {/* TABLE CONTAINER */}
         <Box
@@ -380,7 +389,15 @@ const Dashboard: React.FC = React.memo(() => {
           }}
         >
           <Button
-            sx={{ color: theme.palette.text.primary }}
+            disableTouchRipple
+            sx={{
+              color: theme.palette.text.primary,
+              borderRadius: 0,
+              backgroundColor: theme.palette.background.default,
+              "&:hover": {
+                backgroundColor: theme.palette.background.default,
+              },
+            }}
             onClick={() => dispatch(setShowScanTable(!showScanTable))}
           >
             {showScanTable ? <ExpandMore /> : <ExpandLess />}

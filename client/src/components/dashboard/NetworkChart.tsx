@@ -1,29 +1,19 @@
 import { Graph } from "react-d3-graph";
 import { useDispatch, useSelector } from "react-redux";
-import { Box, Typography, useTheme } from "@mui/material";
+import { Box, useTheme } from "@mui/material";
 import { selectFields } from "../../reducers/selectors";
-import {
-  Port,
-  setSelectedDeviceInfo,
-  setShowSelectedDeviceInfo,
-} from "../../reducers/Slice";
-import { StatusCircle } from "./assets/customComponents";
+import { Port, setSelectedDeviceInfo } from "../../reducers/Slice";
 import { AnyAction, Dispatch } from "@reduxjs/toolkit";
+import { useRef, useState, useEffect } from "react";
 
 const NetworkGraph = () => {
   const theme = useTheme();
   const dispatch = useDispatch<Dispatch<AnyAction>>();
-  const {
-    discoveredHosts,
-    devices,
-    showSelectedDeviceInfo,
-    selectedDeviceInfo,
-    showScanTable,
-  } = useSelector(selectFields);
+  const { discoveredHosts, devices } = useSelector(selectFields);
 
   const config = {
-    width: 1400,
-    height: showScanTable ? 450 : 800,
+    width: 1000,
+    height: 1000,
     highlightDegree: 0,
     nodeHighlightBehavior: true,
     node: {
@@ -39,37 +29,60 @@ const NetworkGraph = () => {
     },
   };
 
+  const graphContainerRef = useRef<HTMLElement | null>(null);
+  const [graphDimensions, setGraphDimensions] = useState({
+    width: config.width,
+    height: config.height,
+  });
+
+  const updateGraphDimensions = (): void => {
+    if (graphContainerRef.current) {
+      setGraphDimensions({
+        width: graphContainerRef.current.offsetWidth,
+        height: graphContainerRef.current.offsetHeight,
+      });
+    }
+  };
+
+  useEffect(() => {
+    window.addEventListener("resize", updateGraphDimensions);
+    updateGraphDimensions();
+
+    return () => {
+      window.removeEventListener("resize", updateGraphDimensions);
+    };
+  }, []);
+
+  const newConfig = {
+    ...config,
+    width: graphDimensions.width,
+    height: graphDimensions.height,
+  };
+
   const onClickNode = (nodeId: string): void => {
     const node = devices.find(
       (host: { ipAddress: string }) => host.ipAddress === nodeId
     );
     if (node) {
-      dispatch(
-        setSelectedDeviceInfo(
-          <Box>
-            <Typography>{node.hostname}</Typography>
-            <Typography>{node.ipAddress}</Typography>
-            <Typography>{node.macAddress}</Typography>
-            <Typography>{node.vendor}</Typography>
-            <Typography display="flex" alignItems="center" gap={1}>
-              Status: {<StatusCircle status={node.status} />}
-            </Typography>
-            <Typography>Open ports:</Typography>
-            {node.openPorts.map((port: Port, key: number) => (
-              <Typography key={key}>
-                {port.portNumber} {port.protocol} {port.serviceName}{" "}
-                {port.state}
-              </Typography>
-            ))}
-          </Box>
-        )
-      );
-      dispatch(setShowSelectedDeviceInfo(true));
+      const deviceInfo = {
+        hostname: node.hostname,
+        ipAddress: node.ipAddress,
+        macAddress: node.macAddress,
+        vendor: node.vendor,
+        status: node.status,
+        openPorts: node.openPorts.map((port: Port) => ({
+          portNumber: port.portNumber,
+          protocol: port.protocol,
+          serviceName: port.serviceName,
+          state: port.state,
+        })),
+      };
+      dispatch(setSelectedDeviceInfo(deviceInfo));
     }
   };
 
   const onClickOutsideNode = (): void => {
-    dispatch(setShowSelectedDeviceInfo(false));
+    dispatch(setSelectedDeviceInfo(null));
   };
 
   const nodes = discoveredHosts.map(
@@ -91,31 +104,14 @@ const NetworkGraph = () => {
   };
 
   return (
-    <Box onClick={onClickOutsideNode}>
+    <Box onClick={onClickOutsideNode} ref={graphContainerRef}>
       <Graph
         id="graph-id"
         data={data}
-        config={config}
+        config={newConfig}
         onClickNode={onClickNode}
+        onZoomChange={updateGraphDimensions}
       />
-      {showSelectedDeviceInfo && (
-        <Box
-          sx={{
-            backgroundColor: theme.palette.background.default,
-            padding: "1rem",
-            display: "flex",
-            flexDirection: "column",
-            position: "absolute",
-            overflowY: "auto",
-            width: "fit-content",
-            top: 0,
-            left: 0,
-            bottom: "auto",
-          }}
-        >
-          {selectedDeviceInfo}
-        </Box>
-      )}
     </Box>
   );
 };

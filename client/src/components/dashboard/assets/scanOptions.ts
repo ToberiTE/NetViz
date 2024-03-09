@@ -47,6 +47,14 @@ const scanTypes = [
         Description: "TCP FTP Bounce",
         ScanType: "-b",
     },
+    {
+        Description: "SCTP INIT",
+        ScanType: "-sY",
+    },
+    {
+        Description: "SCTP COOKIE ECHO",
+        ScanType: "-sZ",
+    },
 ];
 
 const timings = [
@@ -76,8 +84,6 @@ const timings = [
     },
 ];
 
-// TODO?: add options for single port.
-// TODO?: add options for port range.
 // TODO?: add options for timing granularity.
 
 export { scanTypes, timings };
