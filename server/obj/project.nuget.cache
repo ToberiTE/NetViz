@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "FgktBg6rlF2ZVB6lQ4k2JN5oUS6fv4uHOZYPMabFJiXfs+bfBvvqG2HnheaI33QpueTccsPEHFLStkN2rXOk9Q==",
+  "dgSpecHash": "tDm8XG3ZQ+SAY0GKDeCOG4aXRqjDEFM69t1JMxOZjDWY1YYcllJrQfaDzHl0AfxudJbul7uMvyMCipCFtGv41A==",
   "success": true,
-  "projectFilePath": "C:\\Users\\Adminpc\\Documents\\Devprojects\\Vision\\server\\server.csproj",
+  "projectFilePath": "C:\\Users\\Adminpc\\Documents\\Devprojects\\NetViz\\server\\server.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Adminpc\\.nuget\\packages\\microsoft.netcore.platforms\\1.1.0\\microsoft.netcore.platforms.1.1.0.nupkg.sha512",
     "C:\\Users\\Adminpc\\.nuget\\packages\\microsoft.netcore.targets\\1.1.0\\microsoft.netcore.targets.1.1.0.nupkg.sha512",

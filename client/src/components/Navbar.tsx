@@ -24,7 +24,7 @@ const Navbar: React.FC = () => {
       <Box display="flex" gap={2}>
         <Link to="/">
           <img
-            src="/vision.svg"
+            src="/netviz.svg"
             alt="Logo"
             style={{
               display: "flex",
@@ -35,7 +35,7 @@ const Navbar: React.FC = () => {
             }}
           />
         </Link>
-        <Typography variant="h5">Vision&trade;</Typography>
+        <Typography variant="h5">NetViz&trade;</Typography>
       </Box>
       <Box display="flex" alignItems="center" gap={0.5}>
         <IconButton

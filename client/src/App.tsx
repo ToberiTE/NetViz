@@ -12,7 +12,7 @@ import {
   createTheme,
   useMediaQuery,
 } from "@mui/material";
-import { grey } from "@mui/material/colors";
+
 import { ColorModeContext } from "./color-context";
 import Sidenav from "./components/Sidenav";
 
@@ -35,34 +35,26 @@ function App(_Props: { toggleColorMode: void }) {
     []
   );
 
-  const dark = grey;
-  const light = grey;
   const getDesignTokens = (mode: PaletteMode) => ({
     palette: {
       mode,
       ...(mode === "dark"
         ? {
-            primary: dark,
-            divider: dark[500],
             background: {
-              default: "hsl(40,0%,8%)",
-              paper: dark[900],
+              default: "hsl(240,50%,8%)",
+              paper: "hsl(240,50%,4%)",
             },
             text: {
-              primary: dark[100],
-              secondary: dark[50],
+              primary: "hsl(0,0%,90%)",
             },
           }
         : {
-            primary: light,
-            divider: light[500],
             background: {
-              default: light[200],
-              paper: light[50],
+              default: "hsl(165,100%,95%)",
+              paper: "hsl(0,0%,100%)",
             },
             text: {
-              primary: light[900],
-              secondary: light[800],
+              primary: "hsl(0,0%,5%)",
             },
           }),
     },

@@ -13,3 +13,7 @@ body,
 .MuiTypography-root {
   font-family: "Raleway", sans-serif !important;
 }
+
+.MuiButtonBase-root:not([disabled]) {
+  color: inherit !important;
+}

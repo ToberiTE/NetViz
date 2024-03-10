@@ -2089,11 +2089,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Adminpc\\Documents\\Devprojects\\Vision\\server\\server.csproj",
+      "projectUniqueName": "C:\\Users\\Adminpc\\Documents\\Devprojects\\NetViz\\server\\server.csproj",
       "projectName": "server",
-      "projectPath": "C:\\Users\\Adminpc\\Documents\\Devprojects\\Vision\\server\\server.csproj",
+      "projectPath": "C:\\Users\\Adminpc\\Documents\\Devprojects\\NetViz\\server\\server.csproj",
       "packagesPath": "C:\\Users\\Adminpc\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Adminpc\\Documents\\Devprojects\\Vision\\server\\obj\\",
+      "outputPath": "C:\\Users\\Adminpc\\Documents\\Devprojects\\NetViz\\server\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\Adminpc\\AppData\\Roaming\\NuGet\\NuGet.Config"
