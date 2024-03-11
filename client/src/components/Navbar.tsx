@@ -19,7 +19,7 @@ const Navbar: React.FC = () => {
       bgcolor={theme.palette.background.default}
       position="fixed"
       top="0"
-      zIndex="100"
+      zIndex="2"
     >
       <Box display="flex" gap={2}>
         <Link to="/">
@@ -31,7 +31,7 @@ const Navbar: React.FC = () => {
               height: "1.75rem",
               aspectRatio: "16/9",
               alignItems: "center",
-              filter: theme.palette.mode === "light" ? "invert(0.8)" : "",
+              filter: theme.palette.mode === "light" ? "invert(0.9)" : "",
             }}
           />
         </Link>
@@ -39,6 +39,7 @@ const Navbar: React.FC = () => {
       </Box>
       <Box display="flex" alignItems="center" gap={0.5}>
         <IconButton
+          disableTouchRipple
           onClick={colorMode.toggleColorMode}
           color="inherit"
           title={

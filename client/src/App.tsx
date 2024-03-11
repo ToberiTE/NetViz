@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import Navbar from "./components/Navbar";
 import Dashboard from "./components/dashboard/Dashboard";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-
 import { Provider } from "react-redux";
 import {
   Box,
@@ -12,10 +11,8 @@ import {
   createTheme,
   useMediaQuery,
 } from "@mui/material";
-
 import { ColorModeContext } from "./color-context";
 import Sidenav from "./components/Sidenav";
-
 import store from "./store";
 
 function App(_Props: { toggleColorMode: void }) {

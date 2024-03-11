@@ -20,19 +20,13 @@ import React from "react";
 const Sidenav: React.FC = () => {
   const [selected, setSelected] = useState<string>("");
   const [open, setOpen] = useState<boolean>(false);
-  const theme = useTheme<Theme>();
-
-  const drawerWidth = 280;
+  const theme = useTheme();
 
   const openedMixin = (theme: Theme): CSSObject => ({
-    width: drawerWidth,
+    width: "280px",
     marginTop: "4rem",
     height: "calc(100% - 4rem)",
     backgroundColor: theme.palette.background.default,
-    transition: theme.transitions.create("width", {
-      easing: theme.transitions.easing.easeOut,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
     overflowX: "hidden",
   });
 
@@ -40,10 +34,6 @@ const Sidenav: React.FC = () => {
     backgroundColor: theme.palette.background.default,
     marginTop: "4rem",
     height: "calc(100% - 4rem)",
-    transition: theme.transitions.create("width", {
-      easing: theme.transitions.easing.easeOut,
-      duration: theme.transitions.duration.leavingScreen,
-    }),
     width: `calc(${theme.spacing(7)} + 1px)`,
     [theme.breakpoints.up("sm")]: {
       width: `calc(${theme.spacing(8)} + 1px)`,
@@ -54,9 +44,9 @@ const Sidenav: React.FC = () => {
   const Drawer = styled(MuiDrawer, {
     shouldForwardProp: (prop) => prop !== "open",
   })(({ theme, open }) => ({
-    width: drawerWidth,
+    width: "280px",
     flexShrink: 0,
-    boxSizing: "border-box",
+    zIndex: 2,
     ...(open && {
       ...openedMixin(theme),
       "& .MuiDrawer-paper": openedMixin(theme),
@@ -87,6 +77,7 @@ const Sidenav: React.FC = () => {
     return (
       <Button
         fullWidth
+        disableTouchRipple
         size="small"
         tabIndex={-1}
         sx={{

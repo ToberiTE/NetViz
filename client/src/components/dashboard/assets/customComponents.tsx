@@ -1,12 +1,6 @@
-import {
-  Alert,
-  Button,
-  LinearProgress,
-  Typography,
-  useTheme,
-} from "@mui/material";
+import { Alert, Button, LinearProgress, Typography } from "@mui/material";
 import React from "react";
-import { Device, Port } from "../../../reducers/Slice";
+import { Device } from "../../../reducers/Slice";
 
 const StatusCircle = React.memo(({ status }: { status: string }) => {
   const color = status === "up" ? "hsl(120, 73%, 70%)" : "hsl(0, 100%, 50%)";
@@ -124,8 +118,8 @@ const DeviceInfo = ({ device }: { device: Device }) => (
       Status: {<StatusCircle status={device.status} />}
     </Typography>
     <Typography pt="0.5rem">Open ports:</Typography>
-    {device.openPorts.map((port: Port, key: number) => (
-      <Typography key={key}>
+    {device.openPorts.map((port, i) => (
+      <Typography key={i}>
         {port.portNumber} {port.protocol} {port.serviceName} {port.state}
       </Typography>
     ))}
@@ -141,15 +135,11 @@ const ScanButton = ({
   bgColor: string;
   label: string;
 }): JSX.Element => {
-  const theme = useTheme();
   return (
     <Button
       disableTouchRipple
       type="submit"
       variant="outlined"
-      style={{
-        color: theme.palette.text.primary,
-      }}
       onClick={onclick}
       sx={{ backgroundColor: bgColor }}
     >

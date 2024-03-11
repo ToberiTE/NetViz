@@ -4,10 +4,16 @@ import {
   MRT_Row,
   type MRT_ColumnDef,
 } from "material-react-table";
-import { Box, Button, ThemeProvider, useTheme } from "@mui/material";
+import {
+  Box,
+  Button,
+  ThemeProvider,
+  Typography,
+  useTheme,
+} from "@mui/material";
 import FileDownloadIcon from "@mui/icons-material/FileDownload";
 import { mkConfig, generateCsv, download } from "export-to-csv";
-import { Device } from "../../reducers/Slice";
+import { Device, Port } from "../../reducers/Slice";
 import { useSelector } from "react-redux";
 import { selectFields } from "../../reducers/selectors";
 import { StatusCircle } from "./assets/customComponents";
@@ -46,8 +52,23 @@ const ProjectTable = () => {
         Cell: ({ cell }) => <StatusCircle status={cell.getValue() as string} />,
       },
       {
-        accessorKey: "OpenPorts",
+        accessorKey: "openPorts",
         header: "Open Ports",
+        Cell: ({ cell }) => {
+          const ports = cell.getValue() as Port[];
+          return (
+            <Box sx={{ display: "flex", gap: 0.5 }}>
+              {ports.map((port, i) => (
+                <Box key={i}>
+                  <Typography>
+                    {port.portNumber}
+                    {i < ports.length - 1 && <span>, </span>}
+                  </Typography>
+                </Box>
+              ))}
+            </Box>
+          );
+        },
       },
     ],
     []

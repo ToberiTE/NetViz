@@ -1,8 +1,6 @@
 using System.Diagnostics;
 using Server;
-using Microsoft.AspNetCore.Http.Json;
 using System.Xml.Linq;
-using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();

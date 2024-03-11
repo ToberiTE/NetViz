@@ -30,7 +30,12 @@ import { selectFields } from "../../reducers/selectors";
 import { AnyAction, Dispatch } from "@reduxjs/toolkit";
 import { useDispatch, useSelector } from "react-redux";
 import NetworkTable from "./NetworkTable";
-import { ExpandLess, ExpandMore } from "@mui/icons-material";
+import {
+  ExpandLess,
+  ExpandMore,
+  Fullscreen,
+  FullscreenExit,
+} from "@mui/icons-material";
 import {
   DeviceInfo,
   ScanButton,
@@ -64,6 +69,8 @@ const Dashboard: React.FC = React.memo(() => {
     selectedTiming: "",
     selectedPorts: "",
   });
+
+  const [fullscreen, setFullscreen] = useState<boolean>(false);
 
   const validateInput = () => {
     HandleMessage("Scan requires more information.", "info");
@@ -196,7 +203,11 @@ const Dashboard: React.FC = React.memo(() => {
           sx={{
             display: "flex",
             height: "100%",
-            position: "relative",
+            position: fullscreen ? "fixed" : "relative",
+            zIndex: fullscreen ? 1000 : "initial",
+            top: fullscreen ? 0 : "initial",
+            left: fullscreen ? 0 : "initial",
+            width: fullscreen ? "100%" : "initial",
             backgroundColor: theme.palette.background.paper,
           }}
         >
@@ -220,6 +231,7 @@ const Dashboard: React.FC = React.memo(() => {
               <DeviceInfo device={selectedDeviceInfo} />
             </Box>
           )}
+
           {/* SELECTED DEVICE CONTAINER END */}
           {/* NETWORK CHART */}
           {devices.length > 0 && (
@@ -240,7 +252,7 @@ const Dashboard: React.FC = React.memo(() => {
           <Box
             sx={{
               display: "flex",
-              flexDirection: "column",
+              flexDirection: "row",
               position: "absolute",
               right: 0,
               bottom: 0,
@@ -249,133 +261,156 @@ const Dashboard: React.FC = React.memo(() => {
               zIndex: 1,
             }}
           >
-            <Button
-              disableTouchRipple
-              sx={{
-                gap: "0.5rem",
-                paddingBlock: "0.5rem",
-                color: theme.palette.text.primary,
-                borderBottomRightRadius: "0",
-                borderTopLeftRadius: "0",
-                borderTopRightRadius: "0",
-                borderBottomLeftRadius: showScanOptions ? "0" : "",
-                backgroundColor: theme.palette.background.default,
-                "&:hover": {
-                  backgroundColor: theme.palette.background.default,
-                },
-              }}
-              onClick={() => dispatch(setShowScanOptions(!showScanOptions))}
-            >
-              Scan options
-              {showScanOptions ? <ExpandLess /> : <ExpandMore />}
-            </Button>
-
-            <Collapse orientation="vertical" in={showScanOptions}>
-              <Box
+            {/* LEFT COLUMN */}
+            <Box>
+              <Button
+                disableTouchRipple
                 sx={{
-                  display: "flex",
-                  flexDirection: "column",
-                  borderBottomLeftRadius: "0.5rem",
-                  padding: "1rem",
-                  gap: "1.5rem",
+                  paddingBlock: "0.525rem",
+                  borderBottomRightRadius: 0,
+                  borderTopRightRadius: 0,
+                  borderTopLeftRadius: 0,
                   backgroundColor: theme.palette.background.default,
+                  "&:hover": {
+                    backgroundColor: theme.palette.background.default,
+                  },
                 }}
+                onClick={() => setFullscreen(!fullscreen)}
               >
-                {/* ScanType */}
-                <FormControl required error={!!errors.selectedScanType}>
-                  <InputLabel size="small" aria-invalid id="scanType">
-                    Scan type
-                  </InputLabel>
-                  <Select
-                    labelId="scanType"
+                {!fullscreen ? <Fullscreen /> : <FullscreenExit />}
+              </Button>
+            </Box>
+            {/* RIGHT COLUMN */}
+            <Box>
+              <Button
+                disableTouchRipple
+                sx={{
+                  width: "100%",
+                  gap: "0.5rem",
+                  paddingBlock: "0.5rem",
+                  borderRadius: 0,
+                  borderBottomLeftRadius: showScanOptions ? 0 : "",
+                  backgroundColor: theme.palette.background.default,
+                  "&:hover": {
+                    backgroundColor: theme.palette.background.default,
+                  },
+                }}
+                onClick={() => dispatch(setShowScanOptions(!showScanOptions))}
+              >
+                Scan options
+                {showScanOptions ? <ExpandLess /> : <ExpandMore />}
+              </Button>
+
+              <Collapse orientation="vertical" in={showScanOptions}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    borderBottomLeftRadius: "0.5rem",
+                    padding: "1.5rem 1rem 1rem 1rem",
+                    gap: "1.5rem",
+                    backgroundColor: theme.palette.background.default,
+                  }}
+                >
+                  {/* ScanType */}
+                  <FormControl required error={!!errors.selectedScanType}>
+                    <InputLabel size="small" aria-invalid id="scanType">
+                      Scan type
+                    </InputLabel>
+                    <Select
+                      labelId="scanType"
+                      size="small"
+                      input={<OutlinedInput label="Scan type" />}
+                      value={selectedScanType}
+                      onChange={(e) =>
+                        dispatch(setSelectedScanType(e.target.value))
+                      }
+                    >
+                      {scanTypes.map((i) => (
+                        <MenuItem key={i.Description} value={i.ScanType}>
+                          {i.Description + " " + i.ScanType}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+
+                  {/* Target */}
+                  <TextField
+                    value={selectedTarget}
+                    error={!!errors.selectedTarget}
+                    label="Target"
+                    spellCheck="false"
                     size="small"
-                    input={<OutlinedInput label="Scan type" />}
-                    value={selectedScanType}
+                    type="text"
                     onChange={(e) =>
-                      dispatch(setSelectedScanType(e.target.value))
+                      dispatch(setSelectedTarget(e.target.value))
                     }
-                  >
-                    {scanTypes.map((i) => (
-                      <MenuItem key={i.Description} value={i.ScanType}>
-                        {i.Description + " " + i.ScanType}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+                  />
+                  {errors.selectedTarget && (
+                    <FormHelperText>{errors.selectedTarget}</FormHelperText>
+                  )}
 
-                {/* Target */}
-                <TextField
-                  value={selectedTarget}
-                  error={!!errors.selectedTarget}
-                  label="Target"
-                  spellCheck="false"
-                  size="small"
-                  type="text"
-                  onChange={(e) => dispatch(setSelectedTarget(e.target.value))}
-                />
-                {errors.selectedTarget && (
-                  <FormHelperText>{errors.selectedTarget}</FormHelperText>
-                )}
+                  {/* Timing */}
+                  <FormControl required error={!!errors.selectedTiming}>
+                    <InputLabel size="small" aria-invalid id="timing">
+                      Timing
+                    </InputLabel>
+                    <Select
+                      labelId="timing"
+                      size="small"
+                      input={<OutlinedInput label="Timing" />}
+                      value={selectedTiming}
+                      onChange={(e) =>
+                        dispatch(setSelectedTiming(e.target.value))
+                      }
+                    >
+                      {timings.map((i) => (
+                        <MenuItem key={i.Description} value={i.Timing}>
+                          {i.Description + " " + i.Timing}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
 
-                {/* Timing */}
-                <FormControl required error={!!errors.selectedTiming}>
-                  <InputLabel size="small" aria-invalid id="timing">
-                    Timing
-                  </InputLabel>
-                  <Select
-                    labelId="timing"
+                  {/* Ports */}
+                  <TextField
+                    error={!!errors.selectedPorts}
+                    label="Port / Ports"
+                    spellCheck="false"
+                    value={selectedPorts}
                     size="small"
-                    input={<OutlinedInput label="Timing" />}
-                    value={selectedTiming}
-                    onChange={(e) =>
-                      dispatch(setSelectedTiming(e.target.value))
-                    }
-                  >
-                    {timings.map((i) => (
-                      <MenuItem key={i.Description} value={i.Timing}>
-                        {i.Description + " " + i.Timing}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-
-                {/* Ports */}
-                <TextField
-                  error={!!errors.selectedPorts}
-                  label="Port / Ports"
-                  spellCheck="false"
-                  value={selectedPorts}
-                  size="small"
-                  type="text"
-                  onChange={(e) => dispatch(setSelectedPorts(e.target.value))}
-                />
-                {errors.selectedPorts && (
-                  <FormHelperText>{errors.selectedPorts}</FormHelperText>
-                )}
-
-                {scanStatus === "pending" ? (
-                  <ScanButton
-                    onclick={() => handleSubmit(true)}
-                    bgColor={
-                      theme.palette.mode === "dark"
-                        ? theme.palette.error.dark
-                        : theme.palette.error.light
-                    }
-                    label="Stop"
+                    type="text"
+                    onChange={(e) => dispatch(setSelectedPorts(e.target.value))}
                   />
-                ) : (
-                  <ScanButton
-                    onclick={() => handleSubmit(false)}
-                    bgColor={
-                      theme.palette.mode === "dark"
-                        ? theme.palette.info.dark
-                        : theme.palette.info.light
-                    }
-                    label="Scan"
-                  />
-                )}
-              </Box>
-            </Collapse>
+                  {errors.selectedPorts && (
+                    <FormHelperText>{errors.selectedPorts}</FormHelperText>
+                  )}
+
+                  {scanStatus === "pending" ? (
+                    <ScanButton
+                      onclick={() => handleSubmit(true)}
+                      bgColor={
+                        theme.palette.mode === "dark"
+                          ? theme.palette.error.dark
+                          : theme.palette.error.light
+                      }
+                      label="Stop"
+                    />
+                  ) : (
+                    <ScanButton
+                      onclick={() => handleSubmit(false)}
+                      bgColor={
+                        theme.palette.mode === "dark"
+                          ? theme.palette.info.dark
+                          : theme.palette.info.light
+                      }
+                      label="Scan"
+                    />
+                  )}
+                </Box>
+              </Collapse>
+            </Box>
+            {/* RIGHT COLUMN END */}
           </Box>
           {/* SCAN OPTIONS CONTAINER END */}
         </Box>
@@ -391,7 +426,6 @@ const Dashboard: React.FC = React.memo(() => {
           <Button
             disableTouchRipple
             sx={{
-              color: theme.palette.text.primary,
               borderRadius: 0,
               backgroundColor: theme.palette.background.default,
               "&:hover": {
