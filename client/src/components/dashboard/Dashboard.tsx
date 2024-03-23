@@ -265,6 +265,7 @@ const Dashboard: React.FC = React.memo(() => {
             <Box>
               <Button
                 disableTouchRipple
+                title={!fullscreen ? "Toggle fullscreen" : "Close fullscreen"}
                 sx={{
                   paddingBlock: "0.525rem",
                   borderBottomRightRadius: 0,
@@ -425,6 +426,7 @@ const Dashboard: React.FC = React.memo(() => {
         >
           <Button
             disableTouchRipple
+            title={!showScanTable ? "Show" : "Hide"}
             sx={{
               borderRadius: 0,
               backgroundColor: theme.palette.background.default,
