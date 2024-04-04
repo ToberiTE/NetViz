@@ -71,8 +71,9 @@ static async Task<(List<DeviceModel>, string?)> StartNmapScan(string scanType, s
 
     try
     {
-        using (Process process = new())
+        await Task.Run(async () =>
         {
+            using Process process = new();
             process.StartInfo.FileName = nmapPath;
             process.StartInfo.Arguments = nmapArguments;
             process.StartInfo.UseShellExecute = false;
@@ -105,7 +106,7 @@ static async Task<(List<DeviceModel>, string?)> StartNmapScan(string scanType, s
                 string errorOutput = await process.StandardError.ReadToEndAsync(cancellationToken);
                 throw new ScanException("Scan aborted.", errorOutput);
             }
-        }
+        }, cancellationToken);
 
         XDocument xdoc = XDocument.Load(outputFile);
 
