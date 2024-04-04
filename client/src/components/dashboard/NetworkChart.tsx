@@ -91,6 +91,7 @@ const NetworkGraph = () => {
     })
   );
 
+  // TODO: some way to decide if a link is a router/switch?
   const links = discoveredHosts
     .slice(1)
     .map((host: { ipAddress: string }, index: number) => ({
