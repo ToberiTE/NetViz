@@ -18,6 +18,5 @@ export const selectFields = createSelector(
         showScanOptions: state.showScanOptions,
         showScanMessage: state.showScanMessage,
         selectedDeviceInfo: state.selectedDeviceInfo,
-        showSelectedDeviceInfo: state.showSelectedDeviceInfo,
     })
 );

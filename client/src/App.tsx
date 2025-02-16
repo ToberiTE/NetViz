@@ -12,7 +12,6 @@ import {
   useMediaQuery,
 } from "@mui/material";
 import { ColorModeContext } from "./color-context";
-import Sidenav from "./components/Sidenav";
 import store from "./store";
 
 function App(_Props: { toggleColorMode: void }) {
@@ -77,7 +76,6 @@ function App(_Props: { toggleColorMode: void }) {
               <ThemeProvider theme={theme}>
                 <CssBaseline enableColorScheme />
                 <Navbar />
-                <Sidenav />
                 <Routes>
                   <Route path="/" element={<Dashboard />} />
                 </Routes>

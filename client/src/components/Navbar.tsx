@@ -35,7 +35,7 @@ const Navbar: React.FC = () => {
             }}
           />
         </Link>
-        <Typography variant="h5">NetViz&trade;</Typography>
+        <Typography variant="h5">NetViz</Typography>
       </Box>
       <Box display="flex" alignItems="center" gap={0.5}>
         <IconButton
