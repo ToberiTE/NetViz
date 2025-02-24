@@ -17,3 +17,8 @@ body,
 .MuiButtonBase-root:not([disabled]) {
   color: inherit !important;
 }
+
+.MuiAlert-root {
+  border-radius: 0 !important;
+  color: inherit !important;
+}

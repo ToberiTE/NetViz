@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Navbar from "./components/Navbar";
 import Dashboard from "./components/dashboard/Dashboard";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
@@ -22,14 +22,11 @@ function App(_Props: { toggleColorMode: void }) {
     setMode(prefersDarkMode ? "dark" : "light");
   }, [prefersDarkMode]);
 
-  const colorMode = useMemo(
-    () => ({
-      toggleColorMode: (): void => {
-        setMode((prevMode) => (prevMode === "light" ? "dark" : "light"));
-      },
-    }),
-    []
-  );
+  const colorMode = {
+    toggleColorMode: (): void => {
+      setMode((prevMode) => (prevMode === "light" ? "dark" : "light"));
+    },
+  };
 
   const getDesignTokens = (mode: PaletteMode) => ({
     palette: {
@@ -46,20 +43,18 @@ function App(_Props: { toggleColorMode: void }) {
           }
         : {
             background: {
-              default: "hsl(165,100%,95%)",
-              paper: "hsl(0,0%,100%)",
+              default: "hsl(165,100%,92%)",
+              paper: "hsl(0,0%,96%)",
             },
             text: {
-              primary: "hsl(0,0%,5%)",
+              primary: "hsl(0,0%,10%)",
             },
           }),
     },
   });
 
-  const theme = useMemo(
-    () => createTheme(getDesignTokens(mode as PaletteMode)),
-    [mode]
-  );
+  const theme = () => createTheme(getDesignTokens(mode as PaletteMode));
+
   return (
     <>
       <BrowserRouter>
@@ -69,8 +64,8 @@ function App(_Props: { toggleColorMode: void }) {
             width="100%"
             height="100%"
             position="fixed"
-            top="4rem"
-            maxHeight="calc(100% - 4rem)"
+            top="3.5rem"
+            maxHeight="calc(100% - 3.5rem)"
           >
             <ColorModeContext.Provider value={colorMode}>
               <ThemeProvider theme={theme}>

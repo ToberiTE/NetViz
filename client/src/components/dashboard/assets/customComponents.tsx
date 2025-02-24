@@ -1,8 +1,7 @@
 import { Alert, Button, LinearProgress, Typography } from "@mui/material";
-import React from "react";
 import { Device } from "../../../reducers/Slice";
 
-const StatusCircle = React.memo(({ status }: { status: string }) => {
+const StatusCircle = ({ status }: { status: string }) => {
   const color = status === "up" ? "hsl(120, 73%, 70%)" : "hsl(0, 100%, 50%)";
   return (
     <span
@@ -15,65 +14,42 @@ const StatusCircle = React.memo(({ status }: { status: string }) => {
       }}
     />
   );
-});
+};
 
-const ScanStatus = React.memo(
-  ({
-    scanStatus,
-    message,
-    onClose,
-  }: {
-    scanStatus: string;
-    message?: string;
-    onClose: () => void;
-  }) => {
-    switch (scanStatus) {
-      case "pending":
-        return <LinearProgress color="info" variant="indeterminate" />;
-      case "error":
-        return (
-          <Alert
-            sx={{
-              borderRadius: "0",
-            }}
-            variant="filled"
-            severity="error"
-            onClose={onClose}
-          >
-            {message}
-          </Alert>
-        );
-      case "success":
-        return (
-          <Alert
-            sx={{
-              borderRadius: "0",
-            }}
-            variant="filled"
-            severity="success"
-            onClose={onClose}
-          >
-            {message}
-          </Alert>
-        );
-      case "info":
-        return (
-          <Alert
-            sx={{
-              borderRadius: "0",
-            }}
-            variant="filled"
-            severity="info"
-            onClose={onClose}
-          >
-            {message}
-          </Alert>
-        );
-      default:
-        return null;
-    }
+const ScanStatus = ({
+  scanStatus,
+  message,
+  onClose,
+}: {
+  scanStatus: string;
+  message?: string;
+  onClose: () => void;
+}) => {
+  switch (scanStatus) {
+    case "pending":
+      return <LinearProgress color={"info"} variant="indeterminate" />;
+    case "error":
+      return (
+        <Alert variant="filled" severity="error" onClose={onClose}>
+          {message}
+        </Alert>
+      );
+    case "success":
+      return (
+        <Alert variant="filled" severity="success" onClose={onClose}>
+          {message}
+        </Alert>
+      );
+    case "info":
+      return (
+        <Alert variant="filled" severity="info" onClose={onClose}>
+          {message}
+        </Alert>
+      );
+    default:
+      return null;
   }
-);
+};
 
 const ValidateIpAddress = (addr: string): boolean => {
   const ipv4Regex = /^(\d{1,3}\.){3}\d{1,3}(\/\d{1,2})?$/;
@@ -127,11 +103,11 @@ const DeviceInfo = ({ device }: { device: Device }) => (
 );
 
 const ScanButton = ({
-  onclick,
+  onClick,
   bgColor,
   label,
 }: {
-  onclick: () => void;
+  onClick: () => void;
   bgColor: string;
   label: string;
 }): JSX.Element => {
@@ -140,7 +116,7 @@ const ScanButton = ({
       disableTouchRipple
       type="submit"
       variant="outlined"
-      onClick={onclick}
+      onClick={onClick}
       sx={{ backgroundColor: bgColor }}
     >
       {label}

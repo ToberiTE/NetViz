@@ -24,7 +24,7 @@ const csvConfig = mkConfig({
   useKeysAsHeaders: true,
 });
 
-const ProjectTable = () => {
+const ProjectTable: React.FC = () => {
   const theme = useTheme();
   const { devices } = useSelector(selectFields);
 

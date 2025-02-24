@@ -6,7 +6,7 @@ import { Port, setSelectedDeviceInfo } from "../../reducers/Slice";
 import { AnyAction, Dispatch } from "@reduxjs/toolkit";
 import { useRef, useState, useEffect } from "react";
 
-const NetworkGraph = () => {
+const NetworkChart: React.FC = () => {
   const theme = useTheme();
   const dispatch = useDispatch<Dispatch<AnyAction>>();
   const { discoveredHosts, devices } = useSelector(selectFields);
@@ -116,4 +116,4 @@ const NetworkGraph = () => {
     </Box>
   );
 };
-export default NetworkGraph;
+export default NetworkChart;

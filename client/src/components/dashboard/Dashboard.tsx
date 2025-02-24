@@ -46,7 +46,7 @@ import {
 import { scanTypes, timings } from "./assets/scanOptions";
 import NetworkChart from "./NetworkChart";
 
-const Dashboard: React.FC = React.memo(() => {
+const Dashboard: React.FC = () => {
   const theme = useTheme();
   const dispatch = useDispatch<Dispatch<AnyAction>>();
   const {
@@ -77,7 +77,7 @@ const Dashboard: React.FC = React.memo(() => {
     const errors: any = {};
 
     if (!selectedTarget || !ValidateIpAddress(selectedTarget)) {
-      errors.selectedTarget = "Valid IPv4, mask optional";
+      errors.selectedTarget = "*Valid IPv4, mask optional";
     }
     if (!selectedScanType) {
       errors.selectedScanType = {};
@@ -86,7 +86,7 @@ const Dashboard: React.FC = React.memo(() => {
       errors.selectedTiming = {};
     }
     if (selectedPorts && !ValidatePorts(selectedPorts)) {
-      errors.selectedPorts = "Ex: 80 | 80-500 | 80,443";
+      errors.selectedPorts = "*Ex: 80 | 80-500 | 80,443";
     }
 
     setErrors(errors);
@@ -348,7 +348,9 @@ const Dashboard: React.FC = React.memo(() => {
                     }
                   />
                   {errors.selectedTarget && (
-                    <FormHelperText>{errors.selectedTarget}</FormHelperText>
+                    <FormHelperText sx={{ mt: "-1rem" }}>
+                      {errors.selectedTarget}
+                    </FormHelperText>
                   )}
 
                   {/* Timing */}
@@ -384,12 +386,14 @@ const Dashboard: React.FC = React.memo(() => {
                     onChange={(e) => dispatch(setSelectedPorts(e.target.value))}
                   />
                   {errors.selectedPorts && (
-                    <FormHelperText>{errors.selectedPorts}</FormHelperText>
+                    <FormHelperText sx={{ mt: "-1rem" }}>
+                      {errors.selectedPorts}
+                    </FormHelperText>
                   )}
 
                   {scanStatus === "pending" ? (
                     <ScanButton
-                      onclick={() => handleSubmit(true)}
+                      onClick={() => handleSubmit(true)}
                       bgColor={
                         theme.palette.mode === "dark"
                           ? theme.palette.error.dark
@@ -399,7 +403,7 @@ const Dashboard: React.FC = React.memo(() => {
                     />
                   ) : (
                     <ScanButton
-                      onclick={() => handleSubmit(false)}
+                      onClick={() => handleSubmit(false)}
                       bgColor={
                         theme.palette.mode === "dark"
                           ? theme.palette.info.dark
@@ -446,6 +450,6 @@ const Dashboard: React.FC = React.memo(() => {
       </Box>
     </Box>
   );
-});
+};
 
 export default Dashboard;

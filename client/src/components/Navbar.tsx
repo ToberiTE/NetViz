@@ -11,10 +11,10 @@ const Navbar: React.FC = () => {
   return (
     <Box
       display="flex"
-      justifyContent="space-between"
       alignItems="center"
-      padding="0.75rem 2.5rem"
-      height="4rem"
+      justifyContent="space-between"
+      px="1rem"
+      height="3.5rem"
       width="100%"
       bgcolor={theme.palette.background.default}
       position="fixed"
@@ -37,11 +37,10 @@ const Navbar: React.FC = () => {
         </Link>
         <Typography variant="h5">NetViz</Typography>
       </Box>
-      <Box display="flex" alignItems="center" gap={0.5}>
+      <Box>
         <IconButton
           disableTouchRipple
           onClick={colorMode.toggleColorMode}
-          color="inherit"
           title={
             theme.palette.mode === "dark"
               ? "Toggle light mode"
