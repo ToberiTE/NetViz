@@ -21,7 +21,7 @@ const Navbar: React.FC = () => {
       top="0"
       zIndex="2"
     >
-      <Box display="flex" gap={2}>
+      <Box display="flex" gap={1.5}>
         <Link to="/">
           <img
             src="/netviz.svg"

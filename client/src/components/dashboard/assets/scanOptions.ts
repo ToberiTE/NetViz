@@ -84,6 +84,4 @@ const timings = [
     },
 ];
 
-// TODO?: add options for timing granularity.
-
 export { scanTypes, timings };

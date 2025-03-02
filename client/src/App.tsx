@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Navbar from "./components/Navbar";
 import Dashboard from "./components/dashboard/Dashboard";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
@@ -53,7 +53,10 @@ function App(_Props: { toggleColorMode: void }) {
     },
   });
 
-  const theme = () => createTheme(getDesignTokens(mode as PaletteMode));
+  const theme = useMemo(
+    () => createTheme(getDesignTokens(mode as PaletteMode)),
+    [mode]
+  );
 
   return (
     <>
