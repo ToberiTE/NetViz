@@ -78,9 +78,12 @@ C:\Users\Adminpc\Documents\Devprojects\NetViz\server\obj\Debug\net8.0\staticweba
 C:\Users\Adminpc\Documents\Devprojects\NetViz\server\obj\Debug\net8.0\staticwebassets\msbuild.buildTransitive.server.props
 C:\Users\Adminpc\Documents\Devprojects\NetViz\server\obj\Debug\net8.0\staticwebassets.pack.json
 C:\Users\Adminpc\Documents\Devprojects\NetViz\server\obj\Debug\net8.0\scopedcss\bundle\server.styles.css
-C:\Users\Adminpc\Documents\Devprojects\NetViz\server\obj\Debug\net8.0\server.csproj.CopyComplete
 C:\Users\Adminpc\Documents\Devprojects\NetViz\server\obj\Debug\net8.0\server.dll
 C:\Users\Adminpc\Documents\Devprojects\NetViz\server\obj\Debug\net8.0\refint\server.dll
 C:\Users\Adminpc\Documents\Devprojects\NetViz\server\obj\Debug\net8.0\server.pdb
 C:\Users\Adminpc\Documents\Devprojects\NetViz\server\obj\Debug\net8.0\server.genruntimeconfig.cache
 C:\Users\Adminpc\Documents\Devprojects\NetViz\server\obj\Debug\net8.0\ref\server.dll
+C:\Users\Adminpc\Documents\Devprojects\NetViz\server\bin\Debug\net8.0\server.staticwebassets.endpoints.json
+C:\Users\Adminpc\Documents\Devprojects\NetViz\server\obj\Debug\net8.0\staticwebassets.build.endpoints.json
+C:\Users\Adminpc\Documents\Devprojects\NetViz\server\obj\Debug\net8.0\staticwebassets\msbuild.server.Microsoft.AspNetCore.StaticWebAssetEndpoints.props
+C:\Users\Adminpc\Documents\Devprojects\NetViz\server\obj\Debug\net8.0\server.csproj.Up2Date
